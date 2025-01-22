@@ -1,28 +1,27 @@
-import json
 import requests
-from socket import timeout
-import logging
 
 def hit_endpoint(url):
-    list=[]
-    if(url!="null"):
+    try:
+        # Send GET request to the API
         data = requests.get(url)
-        #print(data.json())
-        dump = data.json()
-        print(dump["count"])
-        for link in dump["entries"]:
-            print(link['Link'])
+
+        # Check if the response was successful (HTTP status code 200)
+        if data.status_code == 200:
             try:
-                data2 = requests.get(link['Link'],timeout=10)
-                if (data2.status_code==200):
-                    list.append(link['Link'])
-                    print(list)
-                else:
-                    print("Status Code is not 200")
-            except requests.exceptions.Timeout:
-                logging.error("timeout")
+                # Try to parse the response as JSON
+                json_data = data.json()
+                print(json_data)  # Print the JSON response
+            except ValueError as e:
+                # If JSON parsing fails, print the error and response text
+                print(f"Error decoding JSON: {e}")
+                print(f"Raw response text: {data.text}")  # Print the raw response
+        else:
+            print(f"Failed to retrieve data. Status code: {data.status_code}")
+            print(f"Response text: {data.text}")
 
-    else:
-        print("Error loading the url")
+    except requests.exceptions.RequestException as e:
+        # Catch any request errors (like network issues)
+        print(f"Request failed: {e}")
 
+# Example API endpoint
 hit_endpoint("https://api.publicapis.org/entries")
